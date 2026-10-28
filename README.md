@@ -1,4 +1,4 @@
-# Lotus.SplashScreen
+# BepInEx.SplashReimagined / ThetaHalo.BepInExSplash
 A reimagining of BepInEx.SplashScreen which improves the UI.
 
 ---
