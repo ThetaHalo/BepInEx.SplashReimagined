@@ -106,7 +106,7 @@ public static class Configuration
         writer.WriteLine("# Set this to the path of your project's logo. ex: \"logo.png\"\nHighly recommended to put this in the assets folder.");
         writer.WriteLine("# This is the logo which will appear on the splash screen. Recommended to use a transparent image or else it'll look weird.");
         writer.WriteLine($"LogoPath={LogoPath}");
-        writer.WriteLine("# Set this to the path of your project's icon. ex: \"icon.png\"\nHighly recommended to put this in the assets folder.");
+        writer.WriteLine("# Set this to the path of your project's icon. ex: \"icon.png\"\n# Highly recommended to put this in the assets folder.");
         writer.WriteLine("# This is the icon which will appear in the taskbar.");
         writer.WriteLine($"IconPath={IconPath}");
     }

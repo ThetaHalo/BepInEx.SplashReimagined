@@ -101,7 +101,7 @@ public static class SplashScreenProgram
 
                 Utilities.DrawButton(Textures.WebsiteInactive, Textures.WebsiteActive, new Rectangle(70, 40, 90, 90), Configuration.GitHubLink, ref wasWebsiteHovered);
                 Utilities.DrawButton(Textures.DiscordInactive, Textures.DiscordActive, new Rectangle(160, 40, 90, 90), Configuration.DiscordLink, ref wasDiscordHovered);
-                Utilities.DrawButton(Textures.OpenGameDirInactive, Textures.OpenGameDirActive, new Rectangle(250, 40, 90, 90), GameDir, ref wasOpenGameDirHovered);
+                if (GameDir != string.Empty && Directory.Exists(GameDir)) Utilities.DrawButton(Textures.OpenGameDirInactive, Textures.OpenGameDirActive, new Rectangle(250, 40, 90, 90), GameDir, ref wasOpenGameDirHovered);
                 
                 Utilities.DrawCheckpoints();
                 Utilities.DrawLoadingBar(StateManager.GetLoadingBarProgress());
@@ -159,9 +159,9 @@ public static class SplashScreenProgram
         var gameProcess = Process.GetProcessById(pid);
         
         if (gameProcess == null)
-            throw new Exception("Could not find Among Us process. Make sure to launch the game first.");
+            throw new Exception("Could not find game process. Make sure to launch the game first.");
 
-        GameDir = Path.GetDirectoryName(gameProcess.MainModule?.FileName) ?? throw new Exception("Could not determine Among Us directory.");
+        GameDir = Path.GetDirectoryName(gameProcess.MainModule?.FileName) ?? throw new Exception("Could not determine game directory.");
     }
     
 }

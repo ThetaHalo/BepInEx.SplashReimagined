@@ -1,5 +1,5 @@
 # Lotus.SplashScreen
-A reimagining of BepInEx.SplashScreen specifically themed for Project: Lotus
+A reimagining of BepInEx.SplashScreen which improves the UI.
 
 ---
 
@@ -10,17 +10,26 @@ A reimagining of BepInEx.SplashScreen specifically themed for Project: Lotus
 ---
 
 ### For Developers:
-There's a version of this without the Lotus specific theme and content, which I highly recommend using instead of this.
+When shipping this with your mod, you are able to modify certain aspects of the splash screen by changing the "splash.cfg" file. \
+It's highly recommended to do this, especially for the button links.\
+The following options are available:
 
-You can find it at the following link: (to be added)
+| Option        | Description                                                                                | Type   |
+|---------------|--------------------------------------------------------------------------------------------|--------|
+| `ProjectName` | The name of your project.                                                                  | string |
+| `GameName`    | The name of the game your mod is for.                                                      | string |
+| `DiscordLink` | The link to your Discord server.                                                           | string |
+| `GitHubLink`  | The link to your GitHub repository or website.                                             | string |
+| `LogoPath`    | The path to your project's logo. <br /> It's recommended to put this in the assets folder. | string |
+| `IconPath`    | The path to your project's icon. <br /> It's recommended to put this in the assets folder. | string |
 
-If you do wish to use the version in this repository, note that it isn't very customizable (other than assets).
+By default, this Splash Screen is themed to Among Us (cause i'm an among us mod developer), but it should work for any game, as long as you use `BepInEx 6`
 
 ---
 
 ### Credits:
-- [BepInEx.SplashScreen](https://github.com/BepInEx/BepInEx.SplashScreen) - Original Splash Screen for BepInEx. Some code is used from there (kind of unavoidable). 
-- **Lazy/Piggy B** - Artist for most of the assets featured.
-- [DPAnimating](https://www.youtube.com/@dpanimating) - Made the little lotus hat on the mini-crewmate.
+- [Lotus.SplashScreen](https://github.com/Lotus-AU/Lotus.SplashScreen) - What this is forked from.
+- [am-clonec/AchievementsAPI](https://github.com/am-clonec/AchievementsAPI) - Background for the Splash Screen.
+- [BepInEx.SplashScreen](https://github.com/BepInEx/BepInEx.SplashScreen) - Original Splash Screen for BepInEx. Some code is used from there (kind of unavoidable).
 
 **This project is licensed under the GNU General Public License v3.0. See the LICENSE file for more details.**
