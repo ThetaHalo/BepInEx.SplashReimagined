@@ -1,12 +1,12 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
 
-namespace Lotus.SplashScreen;
+namespace BepInEx.SplashReimagined;
 
 public static class ThreadLogReader
 {
     private static readonly ConcurrentQueue<string> Messages = new();
-    private static bool closed;
+    private static volatile bool closed;
 
     public static bool Closed => closed;
 
@@ -30,8 +30,16 @@ public static class ThreadLogReader
         }
     }
 
-    public static void Update()
+    public static bool Update()
     {
-        while (Messages.TryDequeue(out string? message)) StateManager.ProcessLogMessage(message);
+        bool receivedMessages = false;
+
+        while (Messages.TryDequeue(out string? message))
+        {
+            receivedMessages = true;
+            StateManager.ProcessLogMessage(message);
+        }
+
+        return receivedMessages;
     }
 }

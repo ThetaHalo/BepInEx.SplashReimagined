@@ -3,7 +3,7 @@ using BepInEx.Preloader.Core.Patching;
 
 namespace BepInEx.SplashReimagined;
 
-[PatcherPluginInfo("Lotus.SplashScreen", "Lotus.SplashScreen", "1.0.0")]
+[PatcherPluginInfo("ThetaHalo.BepInExSplash", "ThetaHalo.BepInExSplash", "1.1.0")]
 public class LotusSplashPatcherPlugin : BasePatcher
 {
     private static int isInit;

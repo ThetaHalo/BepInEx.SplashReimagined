@@ -2,7 +2,7 @@
 using System.Numerics;
 using Raylib_cs;
 
-namespace Lotus.SplashScreen;
+namespace BepInEx.SplashReimagined;
 
 public static class Utilities
 {
@@ -32,6 +32,25 @@ public static class Utilities
 
         DrawImage(texture, x, y, texture.Width * scale, texture.Height * scale, flip);
     }
+
+    public static void ScaleImage(Texture2D texture, Rectangle bounds, float scaleFactor = 1f, bool flip = false)
+    {
+        float scale = MathF.Min(
+            1f,
+            MathF.Min(
+                bounds.Width / texture.Width,
+                bounds.Height / texture.Height)) * scaleFactor;
+        float width = texture.Width * scale;
+        float height = texture.Height * scale;
+
+        DrawImage(
+            texture,
+            bounds.X + (bounds.Width - width) / 2,
+            bounds.Y + (bounds.Height - height) / 2,
+            width,
+            height,
+            flip);
+    }
     
     public static void DrawButton(Texture2D inactive, Texture2D active, Rectangle bounds, string url, ref bool wasHovered)
     {
@@ -51,11 +70,11 @@ public static class Utilities
     
     public static void DrawLoadingBar(float progress)
     {
-        const int barWidth = 800;
-        const int barHeight = 500;
+        const int barWidth = 660;
+        const int barHeight = 60;
 
-        int x = (LotusSplashScreen.SplashWidth - barWidth) / 2;
-        int y = LotusSplashScreen.SplashHeight - barHeight;
+        int x = (SplashScreenProgram.SplashWidth - barWidth) / 2;
+        int y = (SplashScreenProgram.SplashHeight - barHeight) - 50;
 
         progress = Math.Clamp(progress, 0f, 1f);
         

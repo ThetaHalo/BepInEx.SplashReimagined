@@ -7,16 +7,8 @@
         https://nuget.bepinex.dev/v3/index.json
     </RestoreAdditionalProjectSources>
     </PropertyGroup>
-
-    <PropertyGroup>
-        <AmongUsDirectory>C:\repos\AU\AU-Lotus</AmongUsDirectory>
-    </PropertyGroup>
     
     <ItemGroup>
         <PackageReference Include="BepInEx.Preloader.Core" Version="6.0.0-be.752" />
-        <Reference Include="VentFrameworkContinued">
-            <HintPath>$(AmongUsDirectory)\BepInEx\plugins\VentFrameworkContinued.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
     </ItemGroup>
 </Project>

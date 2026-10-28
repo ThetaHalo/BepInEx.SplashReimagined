@@ -1,6 +1,6 @@
 ﻿using Raylib_cs;
 
-namespace Lotus.SplashScreen;
+namespace BepInEx.SplashReimagined;
 
 // insane lie for class name, this has sounds asw, not just textures
 public static class Textures
@@ -36,38 +36,51 @@ public static class Textures
         OpenGameDirActive = LoadTexture("opengamedir_active.png");
         OpenGameDirInactive = LoadTexture("opengamedir_inactive.png");
         X = LoadTexture("x.png");
-        AppIcon = LoadTexture(Configuration.IconPath.Replace("assets/", ""), isIcon: true);
-        Logo = LoadTexture(Configuration.LogoPath.Replace("assets/", ""));
+        AppIcon = GetIcon(Configuration.IconPath);
+        Logo = GetLogo(Configuration.LogoPath);
         
         ClickSound = LoadSoundAsset("click.wav");
         HoverSound = LoadSoundAsset("hover.wav");
     }
 
-    private static Texture2D LoadTexture(string filename, bool isIcon = false)
+    private static Texture2D LoadTexture(string filename, bool isIcon = false, bool isEmbedded = true)
     {
-        var assembly = typeof(Textures).Assembly;
-
-        using var stream = assembly.GetManifestResourceStream($"Assets/{filename}") ?? throw new FileNotFoundException($"Embedded asset not found: {filename}");
-
-        using var memory = new MemoryStream();
-        stream.CopyTo(memory);
-
-        byte[] bytes = memory.ToArray();
-        Image image = Raylib.LoadImageFromMemory(".png", bytes);
-        
-        if (isIcon)
+        Stream stream;
+        if (isEmbedded)
         {
-            Raylib.ImageFormat(ref image, PixelFormat.UncompressedR8G8B8A8);
-            Raylib.SetWindowIcon(image);
+            stream = typeof(Textures).Assembly.GetManifestResourceStream($"Assets/{filename}")
+                ?? throw new FileNotFoundException($"Embedded texture not found: {filename}");
+        }
+        else
+        {
+            if (!File.Exists(filename))
+                throw new FileNotFoundException($"Texture file not found: {filename}");
+
+            stream = File.OpenRead(filename);
         }
 
-        try
+        using (stream)
         {
-            return Raylib.LoadTextureFromImage(image);
-        }
-        finally
-        {
-            Raylib.UnloadImage(image);
+            using var memory = new MemoryStream();
+            stream.CopyTo(memory);
+
+            byte[] bytes = memory.ToArray();
+            Image image = Raylib.LoadImageFromMemory(".png", bytes);
+
+            if (isIcon)
+            {
+                Raylib.ImageFormat(ref image, PixelFormat.UncompressedR8G8B8A8);
+                Raylib.SetWindowIcon(image);
+            }
+
+            try
+            {
+                return Raylib.LoadTextureFromImage(image);
+            }
+            finally
+            {
+                Raylib.UnloadImage(image);
+            }
         }
     }
     
@@ -100,5 +113,45 @@ public static class Textures
         
         Raylib.UnloadSound(ClickSound);
         Raylib.UnloadSound(HoverSound);
+    }
+
+    private static Texture2D GetLogo(string path)
+    {
+        if (path.Contains("default/logo.png"))
+        {
+            return LoadTexture("logo.png");
+        }
+        
+        path = path.Replace("/", Path.DirectorySeparatorChar.ToString()).Replace("\\", Path.DirectorySeparatorChar.ToString());
+        
+        path = Configuration.GetBasePath() + Path.DirectorySeparatorChar + path;
+        
+        if (!File.Exists(path))
+        {
+            Console.WriteLine($"[SplashScreen] Logo file not found at {path}. Using default logo.");
+            return LoadTexture("logo.png");
+        }
+        
+        return LoadTexture(path, isEmbedded: false);
+    }
+    
+    private static Texture2D GetIcon(string path)
+    {
+        if (path.Contains("default/icon.png"))
+        {
+            return LoadTexture("icon.png", isIcon: true);
+        }
+        
+        path = path.Replace("/", Path.DirectorySeparatorChar.ToString()).Replace("\\", Path.DirectorySeparatorChar.ToString());
+        
+        path = Configuration.GetBasePath() + Path.DirectorySeparatorChar + path;
+        
+        if (!File.Exists(path))
+        {
+            Console.WriteLine($"[SplashScreen] Icon file not found at {path}. Using default icon.");
+            return LoadTexture("icon.png", isIcon: true);
+        }
+
+        return LoadTexture(path, isIcon: true, isEmbedded: false);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Lotus.SplashScreen;
+﻿namespace BepInEx.SplashReimagined;
 
 public static class StateManager
 {
@@ -29,7 +29,7 @@ public static class StateManager
     {
         message = message.Trim();
         
-        if (message.Contains("Begin async loading MainMenu"))
+        if (message.Contains("Chainloader startup complete"))
         {
             ShouldClose = true;
             return;

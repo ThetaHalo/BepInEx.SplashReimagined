@@ -1,18 +1,20 @@
 ﻿using System.Diagnostics;
 using Raylib_cs;
 
-namespace Lotus.SplashScreen;
+namespace BepInEx.SplashReimagined;
 
-public static class LotusSplashScreen
+public static class SplashScreenProgram
 {
     public const int SplashWidth = 800;
     public const int SplashHeight = 500;
 
-    public static string GameDir = string.Empty;
+    public static string GameDir = string.Empty;    
     
     [STAThread]
     public static void Main(params string[] args)
     {
+        Configuration.ReadConfig();
+        
         Raylib.SetConfigFlags(ConfigFlags.UndecoratedWindow | ConfigFlags.TransparentWindow | ConfigFlags.TopmostWindow);
         Raylib.InitWindow(SplashWidth, SplashHeight, $"{Configuration.ProjectName} Splash Screen");
         Raylib.SetTargetFPS(60);
@@ -20,6 +22,10 @@ public static class LotusSplashScreen
         
         double startedAt = Raylib.GetTime();
         bool connectedToGame = args.Length > 0;
+        int timeoutTime = 120;
+        int threadTimeout = 60;
+        
+        double lastLogAt = startedAt;
 
         try
         {
@@ -36,7 +42,22 @@ public static class LotusSplashScreen
 
             while (!Raylib.WindowShouldClose())
             {
-                ThreadLogReader.Update();
+                bool updated = ThreadLogReader.Update();
+                double now = Raylib.GetTime();
+
+                if (updated)
+                    lastLogAt = now;
+
+                if (connectedToGame)
+                {
+                    bool openTooLong = now - startedAt >= timeoutTime;
+                    bool logsTimedOut = now - lastLogAt >= threadTimeout;
+
+                    if (ThreadLogReader.Closed || StateManager.ShouldClose || openTooLong || logsTimedOut)
+                    {
+                        break;
+                    }
+                }
                 
                 if (connectedToGame && (ThreadLogReader.Closed || StateManager.ShouldClose)) break;
                 
@@ -53,7 +74,7 @@ public static class LotusSplashScreen
                 #if !DEBUG
                 if (!connectedToGame)
                 {
-                    Raylib.DrawText($"This is a splash screen for {Configuration.ProjectName}. It is not meant to be run directly.\nThe process will exit in 10s, please open Among Us.", 80, 225, 20, Color.Red);
+                    Raylib.DrawText($"This is a splash screen for {Configuration.ProjectName}.\n It is not meant to be run directly.\nThe process will exit in 10s, please open {Configuration.GameName}.", 80, 225, 20, Color.Red);
                     Raylib.EndDrawing();
                     if (Raylib.GetTime() - startedAt >= 10)
                         break;
@@ -62,13 +83,21 @@ public static class LotusSplashScreen
                 }
                 #endif
                 
+                // this sucks ass
                 float logoX = Math.Max(0, SplashWidth - Textures.AppIcon.Width - 70);
-                Utilities.ScaleImage(
+                const float loadingBarTop = 400;
+                float logoScale = MathF.Min(
+                    (SplashWidth - logoX) / Textures.Logo.Width,
+                    loadingBarTop / Textures.Logo.Height) * 0.8f;
+                float logoHeight = Textures.Logo.Height * logoScale;
+
+                Utilities.DrawImage(
                     Textures.Logo,
                     logoX,
-                    80,
-                    (SplashWidth - logoX) * 0.8f,
-                    (SplashHeight - 80) * 0.8f);
+                    (loadingBarTop - logoHeight) / 2 + 30,
+                    Textures.Logo.Width * logoScale,
+                    logoHeight);
+                // ---
 
                 Utilities.DrawButton(Textures.WebsiteInactive, Textures.WebsiteActive, new Rectangle(70, 40, 90, 90), Configuration.GitHubLink, ref wasWebsiteHovered);
                 Utilities.DrawButton(Textures.DiscordInactive, Textures.DiscordActive, new Rectangle(160, 40, 90, 90), Configuration.DiscordLink, ref wasDiscordHovered);

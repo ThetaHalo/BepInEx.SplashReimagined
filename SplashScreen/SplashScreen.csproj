@@ -2,10 +2,10 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <AssemblyName>Lotus.SplashScreen</AssemblyName>
+        <AssemblyName>ThetaHalo.BepInExSplash</AssemblyName>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>Lotus.SplashScreen</RootNamespace>
+        <RootNamespace>BepInEx.SplashReimagined</RootNamespace>
         <Nullable>enable</Nullable>
 
         <PublishAot>true</PublishAot>
@@ -13,6 +13,8 @@
         <OptimizationPreference>Size</OptimizationPreference>
         <DebugType>None</DebugType>
         <DebugSymbols>false</DebugSymbols>
+        
+        <Authors>ThetaHalo</Authors>
     </PropertyGroup>
 
     <ItemGroup>
