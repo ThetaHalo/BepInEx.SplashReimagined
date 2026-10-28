@@ -5,8 +5,8 @@ namespace Lotus.SplashScreen;
 
 public static class LotusSplashScreen
 {
-    public const int SplashWidth = 925;
-    public const int SplashHeight = 550;
+    public const int SplashWidth = 800;
+    public const int SplashHeight = 500;
 
     public static string GameDir = string.Empty;
     
@@ -14,7 +14,7 @@ public static class LotusSplashScreen
     public static void Main(params string[] args)
     {
         Raylib.SetConfigFlags(ConfigFlags.UndecoratedWindow | ConfigFlags.TransparentWindow | ConfigFlags.TopmostWindow);
-        Raylib.InitWindow(SplashWidth, SplashHeight, "Project Lotus Splash Screen");
+        Raylib.InitWindow(SplashWidth, SplashHeight, $"{Configuration.ProjectName} Splash Screen");
         Raylib.SetTargetFPS(60);
         Raylib.InitAudioDevice();
         
@@ -53,7 +53,7 @@ public static class LotusSplashScreen
                 #if !DEBUG
                 if (!connectedToGame)
                 {
-                    Raylib.DrawText("This is a splash screen for Project Lotus. It is not meant to be run directly.\nThe process will exit in 10s, please open Among Us.", 80, 225, 20, Color.Red);
+                    Raylib.DrawText($"This is a splash screen for {Configuration.ProjectName}. It is not meant to be run directly.\nThe process will exit in 10s, please open Among Us.", 80, 225, 20, Color.Red);
                     Raylib.EndDrawing();
                     if (Raylib.GetTime() - startedAt >= 10)
                         break;
@@ -62,15 +62,20 @@ public static class LotusSplashScreen
                 }
                 #endif
                 
-                Raylib.DrawTexture(Textures.Logo, SplashWidth - Textures.Logo.Width - 100, 80, Color.White);
+                float logoX = Math.Max(0, SplashWidth - Textures.AppIcon.Width - 70);
+                Utilities.ScaleImage(
+                    Textures.Logo,
+                    logoX,
+                    80,
+                    (SplashWidth - logoX) * 0.8f,
+                    (SplashHeight - 80) * 0.8f);
 
-                Utilities.DrawButton(Textures.WebsiteInactive, Textures.WebsiteActive, new Rectangle(30, 30, 100, 100), "https://lotusau.top", ref wasWebsiteHovered);
-                Utilities.DrawButton(Textures.DiscordInactive, Textures.DiscordActive, new Rectangle(130, 30, 100, 100), "https://discord.gg/projectlotus", ref wasDiscordHovered);
-                if (Directory.Exists(GameDir)) Utilities.DrawButton(Textures.OpenGameDirInactive, Textures.OpenGameDirActive, new Rectangle(230, 30, 100, 100), GameDir, ref wasOpenGameDirHovered);
+                Utilities.DrawButton(Textures.WebsiteInactive, Textures.WebsiteActive, new Rectangle(70, 40, 90, 90), Configuration.GitHubLink, ref wasWebsiteHovered);
+                Utilities.DrawButton(Textures.DiscordInactive, Textures.DiscordActive, new Rectangle(160, 40, 90, 90), Configuration.DiscordLink, ref wasDiscordHovered);
+                Utilities.DrawButton(Textures.OpenGameDirInactive, Textures.OpenGameDirActive, new Rectangle(250, 40, 90, 90), GameDir, ref wasOpenGameDirHovered);
                 
                 Utilities.DrawCheckpoints();
                 Utilities.DrawLoadingBar(StateManager.GetLoadingBarProgress());
-                Animator.DrawBean();
 
                 Raylib.EndDrawing();
             }
@@ -112,16 +117,13 @@ public static class LotusSplashScreen
         {
             SplashScreenState.ChainloaderStarted => 0,
             SplashScreenState.LoadingPlugins => 1,
-            SplashScreenState.LoadingVF => 2,
-            SplashScreenState.LoadingLotus => 3,
-            SplashScreenState.LoadingAddons => 4,
-            SplashScreenState.Done => 5,
+            SplashScreenState.Done => 2,
             _ => throw new ArgumentOutOfRangeException()
         };
 
         StateManager.SetPluginProgress(processed, 2);
     }
-    
+
     public static void SetGameDir(string[] args)
     {
         var pid = int.Parse(args.Last());
@@ -132,4 +134,5 @@ public static class LotusSplashScreen
 
         GameDir = Path.GetDirectoryName(gameProcess.MainModule?.FileName) ?? throw new Exception("Could not determine Among Us directory.");
     }
+    
 }

@@ -7,52 +7,27 @@ using System.Threading;
 using BepInEx;
 using BepInEx.Logging;
 
-namespace Lotus.SplashScreen;
+namespace BepInEx.SplashReimagined;
 
 public class SplashManager
 {
-    private static readonly ManualLogSource console = Logger.CreateLogSource("Lotus.SplashScreen"); // we back in javascript now 🔥🔥
+    private static readonly ManualLogSource console = Logger.CreateLogSource("SplashScreen"); // we back in javascript now 🔥🔥
     
     private static readonly ConcurrentQueue<string> MessageQueue = new();
     private static Process splashProcess;
     private static bool isFinished = false;
     
-    public static void WatchForVentFramework()
-    {
-        AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoad;
-    }
-
-    private static void OnAssemblyLoad(object? sender, AssemblyLoadEventArgs args)
-    {
-        if (args.LoadedAssembly.GetName().Name != "VentFrameworkContinued")
-            return;
-
-        AppDomain.CurrentDomain.AssemblyLoad -= OnAssemblyLoad;
-
-        try
-        {
-            typeof(SplashManager).Assembly
-                .GetType("Lotus.SplashScreen.VentLoggerAppender")!
-                .GetMethod("Register")!
-                .Invoke(null, null);
-        }
-        catch (Exception exception)
-        {
-            console.LogError($"Failed to register vf splash log appender: {exception}");
-        }
-    }
-    
     public static void Setup()
     {
         var assemblyLocation = typeof(SplashManager).Assembly.Location;
-        var assemblyDirectory = Path.GetDirectoryName(assemblyLocation) ?? Path.Combine(Paths.PatcherPluginPath, "Lotus.SplashScreen");
+        var assemblyDirectory = Path.GetDirectoryName(assemblyLocation) ?? Path.Combine(Paths.PatcherPluginPath, "BepInEx.SplashReimagined");
 
-        var exePath = Path.Combine(assemblyDirectory, "Lotus.SplashScreen.exe");
+        var exePath = Path.Combine(assemblyDirectory, "BepInEx.SplashReimagined.exe");
 
         if (!File.Exists(exePath))
         {
             exePath = Path.Combine(assemblyDirectory, "SplashScreen.exe");
-            if (!File.Exists(exePath)) throw new FileNotFoundException($"Lotus.SplashScreen.exe AND SplashScreen.exe not found at {exePath} D:");
+            if (!File.Exists(exePath)) throw new FileNotFoundException($"BepInEx.SplashReimagined.exe AND SplashScreen.exe not found at {exePath} D:");
         }
         
         console.LogDebug("Starting main splash exe at path " + exePath);

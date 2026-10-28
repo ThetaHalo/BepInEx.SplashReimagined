@@ -12,9 +12,6 @@ public static class StateManager
     {
         { SplashScreenState.ChainloaderStarted, "Chainloader Initialized" },
         { SplashScreenState.LoadingPlugins, "Loading plugins ({0}/{1})" },
-        { SplashScreenState.LoadingVF, "Loading VentFramework" },
-        { SplashScreenState.LoadingLotus, "Loading Lotus" },
-        { SplashScreenState.LoadingAddons, "Loading addons" },
         { SplashScreenState.Done, "Launching the game!" }
     };
 
@@ -22,9 +19,6 @@ public static class StateManager
     {
         { SplashScreenState.ChainloaderStarted, "Chainloader initialized" },
         { SplashScreenState.LoadingPlugins, "plugins to load" },
-        { SplashScreenState.LoadingVF, "Loading [VentFrameworkContinued " },
-        { SplashScreenState.LoadingLotus, "Loading [Lotus " },
-        { SplashScreenState.LoadingAddons, "Loading Addon [" },
         { SplashScreenState.Done, "Chainloader startup complete" }
     };
     
@@ -112,9 +106,7 @@ public static class StateManager
         {
             SplashScreenState.ChainloaderStarted => current >= (int)SplashScreenState.LoadingPlugins,
             SplashScreenState.LoadingPlugins => CurrentState == SplashScreenState.Done,
-            SplashScreenState.LoadingVF => current >= (int)SplashScreenState.LoadingLotus,
-            SplashScreenState.LoadingLotus => current >= (int)SplashScreenState.LoadingAddons,
-            SplashScreenState.LoadingAddons => CurrentState == SplashScreenState.Done,
+            SplashScreenState.Done => current >= (int)SplashScreenState.Done,
             _ => false
         };
     }
@@ -130,8 +122,5 @@ public enum SplashScreenState
 {
     ChainloaderStarted,
     LoadingPlugins,
-    LoadingVF,
-    LoadingLotus,
-    LoadingAddons,
     Done
 }

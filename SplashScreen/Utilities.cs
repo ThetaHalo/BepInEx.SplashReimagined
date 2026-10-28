@@ -12,9 +12,6 @@ public static class Utilities
     {
         SplashScreenState.ChainloaderStarted,
         SplashScreenState.LoadingPlugins,
-        SplashScreenState.LoadingVF,
-        SplashScreenState.LoadingLotus,
-        SplashScreenState.LoadingAddons,
         SplashScreenState.Done
     };
     
@@ -23,6 +20,17 @@ public static class Utilities
         Rectangle source = new(0, 0, flip ? -texture.Width : texture.Width, texture.Height);
         Rectangle destination = new(x, y, width, height);
         Raylib.DrawTexturePro(texture, source, destination, Vector2.Zero, 0, Color.White);
+    }
+
+    public static void ScaleImage(Texture2D texture, float x, float y, float maxWidth, float maxHeight, bool flip = false)
+    {
+        float scale = MathF.Min(
+            1f,
+            MathF.Min(
+                maxWidth / texture.Width,
+                maxHeight / texture.Height));
+
+        DrawImage(texture, x, y, texture.Width * scale, texture.Height * scale, flip);
     }
     
     public static void DrawButton(Texture2D inactive, Texture2D active, Rectangle bounds, string url, ref bool wasHovered)
@@ -43,11 +51,11 @@ public static class Utilities
     
     public static void DrawLoadingBar(float progress)
     {
-        const int barWidth = 854;
-        const int barHeight = 50;
+        const int barWidth = 800;
+        const int barHeight = 500;
 
         int x = (LotusSplashScreen.SplashWidth - barWidth) / 2;
-        int y = LotusSplashScreen.SplashHeight - barHeight - 30;
+        int y = LotusSplashScreen.SplashHeight - barHeight;
 
         progress = Math.Clamp(progress, 0f, 1f);
         
@@ -77,7 +85,7 @@ public static class Utilities
             if (i == 0)
             {
                 int y = 140;
-                Raylib.DrawText("Among Us is Loading.", 40, y, 30, Color.White);
+                Raylib.DrawText($"{Configuration.GameName} is Loading.", 70, y, 30, Color.White);
             }
             else
             {
@@ -85,8 +93,8 @@ public static class Utilities
                 int y = 140 + i * 40;
             
                 Texture2D icon = StateManager.IsCheckpointComplete(state) ? Textures.Checkmark : Textures.X;
-                DrawImage(icon, 40, y - 3, 27, 27);
-                Raylib.DrawText(StateManager.GetMessage(state), 80, y, 20, Color.White);
+                DrawImage(icon, 70, y - 3, 27, 27);
+                Raylib.DrawText(StateManager.GetMessage(state), 110, y, 20, Color.White);
             }
         }
     }

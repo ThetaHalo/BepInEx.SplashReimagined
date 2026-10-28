@@ -1,6 +1,6 @@
 ﻿using BepInEx.Logging;
 
-namespace Lotus.SplashScreen;
+namespace BepInEx.SplashReimagined;
 
 public class BepLogListener: ILogListener
 {

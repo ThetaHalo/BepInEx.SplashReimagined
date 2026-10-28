@@ -9,7 +9,6 @@ public static class Textures
     public static Texture2D Checkmark { get; private set; }
     public static Texture2D DiscordActive { get; private set; }
     public static Texture2D DiscordInactive { get; private set; }
-    public static Texture2D Logo { get; private set; }
     public static Texture2D Progressbar { get; private set; }
     public static Texture2D ProgressbarMask { get; private set; }
     public static Texture2D WebsiteActive { get; private set; }
@@ -18,6 +17,7 @@ public static class Textures
     public static Texture2D OpenGameDirInactive { get; private set; }
     public static Texture2D X { get; private set; }
     public static Texture2D AppIcon { get; private set; }
+    public static Texture2D Logo { get; private set; }
     
     public static Sound ClickSound { get; private set; }
     
@@ -29,27 +29,18 @@ public static class Textures
         Checkmark = LoadTexture("checkmark.png");
         DiscordActive = LoadTexture("discord_active.png");
         DiscordInactive = LoadTexture("discord_inactive.png");
-        Logo = LoadTexture("logo.png");
         Progressbar = LoadTexture("progressbar.png");
         ProgressbarMask = LoadTexture("progressbar_mask.png");
-        WebsiteActive = LoadTexture("website_active.png");
-        WebsiteInactive = LoadTexture("website_inactive.png");
+        WebsiteActive = LoadTexture("github_active.png");
+        WebsiteInactive = LoadTexture("github_inactive.png");
         OpenGameDirActive = LoadTexture("opengamedir_active.png");
         OpenGameDirInactive = LoadTexture("opengamedir_inactive.png");
         X = LoadTexture("x.png");
-        AppIcon = LoadTexture("icon.png", isIcon: true);
+        AppIcon = LoadTexture(Configuration.IconPath.Replace("assets/", ""), isIcon: true);
+        Logo = LoadTexture(Configuration.LogoPath.Replace("assets/", ""));
+        
         ClickSound = LoadSoundAsset("click.wav");
         HoverSound = LoadSoundAsset("hover.wav");
-        
-        Animator.BeanFrames =
-        [
-            LoadTexture("LilypadAnim_3.png"),
-            LoadTexture("LilypadAnim_2.png"),
-            LoadTexture("LilypadAnim_1.png"),
-            LoadTexture("LilypadAnim_6.png"),
-            LoadTexture("LilypadAnim_4.png"),
-            LoadTexture("LilypadAnim_5.png")
-        ];
     }
 
     private static Texture2D LoadTexture(string filename, bool isIcon = false)
@@ -100,13 +91,13 @@ public static class Textures
         foreach (Texture2D texture in 
             new[] { 
                 SplashBackground, Checkmark, DiscordActive, DiscordInactive, 
-                    Logo, Progressbar, ProgressbarMask, WebsiteActive, WebsiteInactive, X,
+                    Progressbar, ProgressbarMask, WebsiteActive, WebsiteInactive, X,
                     OpenGameDirActive, OpenGameDirInactive, AppIcon
             })
         {
             Raylib.UnloadTexture(texture);
         }
-        Animator.BeanFrames = [];
+        
         Raylib.UnloadSound(ClickSound);
         Raylib.UnloadSound(HoverSound);
     }

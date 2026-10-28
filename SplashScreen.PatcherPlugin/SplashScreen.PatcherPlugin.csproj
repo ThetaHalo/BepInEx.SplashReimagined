@@ -2,7 +2,7 @@
     <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <RootNamespace>Lotus.SplashScreen</RootNamespace>
+    <RootNamespace>BepInEx.SplashReimagined</RootNamespace>
     <RestoreAdditionalProjectSources>
         https://nuget.bepinex.dev/v3/index.json
     </RestoreAdditionalProjectSources>

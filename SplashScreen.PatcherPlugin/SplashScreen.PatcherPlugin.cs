@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using BepInEx.Preloader.Core.Patching;
 
-namespace Lotus.SplashScreen;
+namespace BepInEx.SplashReimagined;
 
 [PatcherPluginInfo("Lotus.SplashScreen", "Lotus.SplashScreen", "1.0.0")]
 public class LotusSplashPatcherPlugin : BasePatcher
@@ -13,7 +13,6 @@ public class LotusSplashPatcherPlugin : BasePatcher
     {
         if (Interlocked.Exchange(ref isInit, 1) == 1) return;
         SplashManager.Setup();
-        SplashManager.WatchForVentFramework();
         listener = BepLogListener.StartListening();
     }
 }
