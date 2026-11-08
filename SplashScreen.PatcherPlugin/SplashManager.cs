@@ -22,12 +22,19 @@ public class SplashManager
         var assemblyLocation = typeof(SplashManager).Assembly.Location;
         var assemblyDirectory = Path.GetDirectoryName(assemblyLocation) ?? Path.Combine(Paths.PatcherPluginPath, "ThetaHalo.BepInExSplash");
 
-        var exePath = Path.Combine(assemblyDirectory, "ThetaHalo.BepInExSplash.exe");
+        var runtimeDirectory = Path.GetFullPath(Path.Combine(assemblyDirectory, "..", "..", "ThetaHalo.BepInExSplash"));
+        const string executableName = "ThetaHalo.BepInExSplash.exe";
+        var exePath = Path.Combine(runtimeDirectory, executableName);
+        if (!File.Exists(exePath))
+            exePath = Path.Combine(assemblyDirectory, "runtime", executableName);
+        if (!File.Exists(exePath))
+            exePath = Path.Combine(assemblyDirectory, executableName);
 
         if (!File.Exists(exePath))
         {
             exePath = Path.Combine(assemblyDirectory, "SplashScreen.exe");
-            if (!File.Exists(exePath)) throw new FileNotFoundException($"ThetaHalo.BepInExSplash.exe AND SplashScreen.exe not found at {exePath} D:");
+            if (!File.Exists(exePath))
+                throw new FileNotFoundException($"Splash executable not found at {exePath}");
         }
         
         console.LogDebug("Starting main splash exe at path " + exePath);

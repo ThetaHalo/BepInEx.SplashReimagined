@@ -1,4 +1,5 @@
 ﻿using Raylib_cs;
+using Image = Raylib_cs.Image;
 
 namespace BepInEx.SplashReimagined;
 

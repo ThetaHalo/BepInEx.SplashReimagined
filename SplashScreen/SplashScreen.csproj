@@ -3,12 +3,16 @@
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <AssemblyName>ThetaHalo.BepInExSplash</AssemblyName>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <UseWindowsForms>true</UseWindowsForms>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>BepInEx.SplashReimagined</RootNamespace>
         <Nullable>enable</Nullable>
 
-        <PublishAot>true</PublishAot>
+        <SelfContained>true</SelfContained>
+        <PublishSingleFile>true</PublishSingleFile>
+        <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <OptimizationPreference>Size</OptimizationPreference>
         <DebugType>None</DebugType>
@@ -26,5 +30,6 @@
         <EmbeddedResource Include="assets\**\*.png;assets\**\*.wav">
             <LogicalName>Assets/%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
+        <None Update="assets\**\*.png" CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
 </Project>

@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
 using Raylib_cs;
+using Color = Raylib_cs.Color;
+using Rectangle = Raylib_cs.Rectangle;
 
 namespace BepInEx.SplashReimagined;
 
