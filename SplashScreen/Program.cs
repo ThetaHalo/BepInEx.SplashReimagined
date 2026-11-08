@@ -1,20 +1,6 @@
 ﻿using System.Diagnostics;
-#if WINDOWS
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Text;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
-#endif
 using Raylib_cs;
-using Color = Raylib_cs.Color;
-#if WINDOWS
-using DrawingColor = System.Drawing.Color;
-using DrawingFont = System.Drawing.Font;
-using DrawingImage = System.Drawing.Image;
-using DrawingRectangle = System.Drawing.Rectangle;
-#endif
-using Rectangle = Raylib_cs.Rectangle;
 
 namespace BepInEx.SplashReimagined;
 
@@ -31,7 +17,6 @@ public static class SplashScreenProgram
         Configuration.ReadConfig();
 
         bool connectedToGame = args.Length > 0;
-#if WINDOWS
         if (IsRunningUnderWine())
         {
             if (connectedToGame)
@@ -40,10 +25,9 @@ public static class SplashScreenProgram
                 SetGameDir(args);
             }
 
-            Application.Run(new WineSplashForm(connectedToGame));
+            WineSplash.Run(connectedToGame);
             return;
         }
-#endif
 
         Raylib.SetConfigFlags(ConfigFlags.UndecoratedWindow | ConfigFlags.TransparentWindow | ConfigFlags.TopmostWindow);
         Raylib.InitWindow(SplashWidth, SplashHeight, $"{Configuration.ProjectName} Splash Screen");
@@ -189,7 +173,6 @@ public static class SplashScreenProgram
         GameDir = Path.GetDirectoryName(gameProcess.MainModule?.FileName) ?? throw new Exception("Could not determine game directory.");
     }
 
-#if WINDOWS
     private static bool IsRunningUnderWine()
     {
         if (!NativeLibrary.TryLoad("ntdll.dll", out nint ntdll))
@@ -204,181 +187,4 @@ public static class SplashScreenProgram
             NativeLibrary.Free(ntdll);
         }
     }
-
-    private sealed class WineSplashForm : Form
-    {
-        private readonly bool connectedToGame;
-        private readonly Stopwatch stopwatch = Stopwatch.StartNew();
-        private readonly System.Windows.Forms.Timer timer = new() { Interval = 50 };
-        private readonly Dictionary<string, DrawingImage> images = new(StringComparer.OrdinalIgnoreCase);
-        private readonly DrawingFont headingFont = new("Arial", 25, FontStyle.Bold, GraphicsUnit.Pixel);
-        private readonly DrawingFont itemFont = new("Arial", 18, FontStyle.Regular, GraphicsUnit.Pixel);
-        private TimeSpan lastLogAt;
-        private Point mousePosition;
-
-        public WineSplashForm(bool connectedToGame)
-        {
-            this.connectedToGame = connectedToGame;
-            lastLogAt = stopwatch.Elapsed;
-
-            FormBorderStyle = FormBorderStyle.None;
-            StartPosition = FormStartPosition.CenterScreen;
-            ClientSize = new Size(SplashWidth, SplashHeight);
-            BackColor = DrawingColor.FromArgb(1, 0, 1);
-            TransparencyKey = BackColor;
-            TopMost = true;
-            ShowInTaskbar = false;
-            KeyPreview = true;
-            DoubleBuffered = true;
-
-            foreach (string name in new[]
-                     {
-                         "SplashBackground.png", "github_inactive.png", "github_active.png",
-                         "discord_inactive.png", "discord_active.png", "opengamedir_inactive.png",
-                         "opengamedir_active.png", "logo.png", "progressbar.png",
-                         "progressbar_mask.png", "checkmark.png", "x.png"
-                     })
-            {
-                string path = Path.Combine(AppContext.BaseDirectory, "assets", name);
-                images.Add(name, DrawingImage.FromFile(path));
-            }
-
-            timer.Tick += (_, _) =>
-            {
-                if (connectedToGame)
-                {
-                    if (ThreadLogReader.Update())
-                        lastLogAt = stopwatch.Elapsed;
-
-                    if (ThreadLogReader.Closed || StateManager.ShouldClose ||
-                        stopwatch.Elapsed.TotalSeconds >= 120 ||
-                        (stopwatch.Elapsed - lastLogAt).TotalSeconds >= 60)
-                    {
-                        Close();
-                        return;
-                    }
-                }
-                else if (stopwatch.Elapsed.TotalSeconds >= 10)
-                {
-                    Close();
-                    return;
-                }
-
-                Invalidate();
-            };
-            timer.Start();
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-
-            Graphics graphics = e.Graphics;
-            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            graphics.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-
-            DrawImage(graphics, "SplashBackground.png", 0, 0, SplashWidth, SplashHeight);
-            DrawButton(graphics, "github_inactive.png", "github_active.png", 70, 40);
-            DrawButton(graphics, "discord_inactive.png", "discord_active.png", 160, 40);
-            if (!string.IsNullOrEmpty(GameDir) && Directory.Exists(GameDir))
-                DrawButton(graphics, "opengamedir_inactive.png", "opengamedir_active.png", 250, 40);
-
-            using var whiteBrush = new SolidBrush(DrawingColor.White);
-            DrawFittedText(graphics, $"{Configuration.GameName} is Loading.", headingFont, whiteBrush, 70, 145, 350, 32);
-            DrawCheckpoint(graphics, SplashScreenState.ChainloaderStarted, 70, 190);
-            DrawCheckpoint(graphics, SplashScreenState.LoadingPlugins, 70, 232);
-            DrawCheckpoint(graphics, SplashScreenState.Done, 70, 274);
-
-            DrawImage(graphics, "logo.png", 440, 85, 270, 270);
-
-            const int barX = 70;
-            const int barY = 390;
-            DrawImage(graphics, "progressbar.png", barX, barY, 660, 60);
-            int fillWidth = (int)(660 * Math.Clamp(StateManager.GetLoadingBarProgress(), 0, 1));
-            if (fillWidth > 0)
-            {
-                GraphicsState state = graphics.Save();
-                graphics.SetClip(new DrawingRectangle(barX, barY, fillWidth, 60));
-                DrawImage(graphics, "progressbar_mask.png", barX, barY, 660, 60);
-                graphics.Restore(state);
-            }
-        }
-
-        protected override void OnMouseMove(MouseEventArgs e)
-        {
-            mousePosition = e.Location;
-            base.OnMouseMove(e);
-        }
-
-        protected override void OnMouseClick(MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                if (new DrawingRectangle(70, 40, 90, 90).Contains(e.Location))
-                    OpenLink(Configuration.GitHubLink);
-                else if (new DrawingRectangle(160, 40, 90, 90).Contains(e.Location))
-                    OpenLink(Configuration.DiscordLink);
-                else if (new DrawingRectangle(250, 40, 90, 90).Contains(e.Location) && Directory.Exists(GameDir))
-                    Process.Start(new ProcessStartInfo(GameDir) { UseShellExecute = true });
-            }
-
-            base.OnMouseClick(e);
-        }
-
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Escape)
-                Close();
-            base.OnKeyDown(e);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                timer.Dispose();
-                headingFont.Dispose();
-                itemFont.Dispose();
-                foreach (DrawingImage image in images.Values)
-                    image.Dispose();
-            }
-
-            base.Dispose(disposing);
-        }
-
-        private void DrawCheckpoint(Graphics graphics, SplashScreenState state, int x, int y)
-        {
-            bool complete = StateManager.IsCheckpointComplete(state);
-            DrawImage(graphics, complete ? "checkmark.png" : "x.png", x, y, 27, 27);
-            using var brush = new SolidBrush(DrawingColor.White);
-            DrawFittedText(graphics, StateManager.GetMessage(state), itemFont, brush, x + 40, y - 1, 310, 29);
-        }
-
-        private static void DrawFittedText(Graphics graphics, string text, DrawingFont font, Brush brush, int x, int y, int width, int height)
-        {
-            using var format = new StringFormat
-            {
-                FormatFlags = StringFormatFlags.NoWrap,
-                Trimming = StringTrimming.EllipsisCharacter
-            };
-            graphics.DrawString(text, font, brush, new DrawingRectangle(x, y, width, height), format);
-        }
-
-        private void DrawButton(Graphics graphics, string inactive, string active, int x, int y)
-        {
-            string image = new DrawingRectangle(x, y, 90, 90).Contains(mousePosition) ? active : inactive;
-            DrawImage(graphics, image, x, y, 90, 90);
-        }
-
-        private void DrawImage(Graphics graphics, string name, int x, int y, int width, int height) =>
-            graphics.DrawImage(images[name], x, y, width, height);
-
-        private static void OpenLink(string link)
-        {
-            if (Uri.TryCreate(link, UriKind.Absolute, out Uri? uri) &&
-                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
-                Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
-        }
-    }
-#endif
 }
