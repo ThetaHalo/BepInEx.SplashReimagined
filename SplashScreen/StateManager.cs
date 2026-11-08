@@ -82,6 +82,7 @@ public static class StateManager
     public static void SetState(SplashScreenState state) 
     {
         if ((int)state > (int)CurrentState) CurrentState = state;
+        Utilities.Log($"State changed to {state}. Progress: {GetLoadingBarProgress():P2}");
         UpdateLoadingBarProgress();
     }
 
@@ -89,6 +90,7 @@ public static class StateManager
     {
         PluginCount = Math.Max(0, total);
         PluginsProcessed = Math.Clamp(processed, 0, PluginCount);
+        Utilities.Log($"Plugin progress updated: {PluginsProcessed}/{PluginCount}. Progress: {GetLoadingBarProgress():P2}");
         UpdateLoadingBarProgress();
     }
 

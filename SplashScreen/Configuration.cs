@@ -46,7 +46,7 @@ public static class Configuration
     
     public static string GetBasePath()
     {
-        return Directory.GetCurrentDirectory();
+        return AppDomain.CurrentDomain.BaseDirectory;
     }
     
     public static void ReadConfig()
@@ -54,16 +54,21 @@ public static class Configuration
         string basePath = GetBasePath();
         string assetsPath = GetAssetsPath();
         FileInfo cfg = new FileInfo(Path.Combine(basePath, "splash.cfg"));
+        Utilities.Log($"Reading config from {cfg.FullName}");
         
         if (!Directory.Exists(assetsPath))
         {
+            Utilities.Log($"No assets folder found at {assetsPath}. Creating it now.");
             Console.WriteLine($"[SplashScreen] No assets folder found at {assetsPath}. Creating it now.");
+            
             Directory.CreateDirectory(assetsPath);
         }
         
         if (!cfg.Exists)
         {
+            Utilities.Log($"No config file found at {cfg.FullName}. Writing default cfg and using default values.");
             Console.WriteLine($"[SplashScreen] No config file found at {cfg.FullName}. Writing default cfg and using default values.");
+            
             WriteDefaultConfig();
             return;
         }
@@ -78,6 +83,8 @@ public static class Configuration
             else if (line.StartsWith("LogoPath=")) LogoPath = line.Substring("LogoPath=".Length);
             else if (line.StartsWith("IconPath=")) IconPath = line.Substring("IconPath=".Length);
         }
+        
+        Utilities.Log("Config loaded");
     }
     
     // w scuff
@@ -103,10 +110,12 @@ public static class Configuration
         writer.WriteLine($"DiscordLink={DiscordLink}");
         writer.WriteLine("# Set this to your project's Website/GitHub link. ex: \"https://github.com/example\"");
         writer.WriteLine($"GitHubLink={GitHubLink}");
-        writer.WriteLine("# Set this to the path of your project's logo. ex: \"logo.png\"\nHighly recommended to put this in the assets folder.");
+        writer.WriteLine("# Set this to the path of your project's logo. ex: \"logo.png\"" +
+                         "\n# Highly recommended to put this in the assets folder.");
         writer.WriteLine("# This is the logo which will appear on the splash screen. Recommended to use a transparent image or else it'll look weird.");
         writer.WriteLine($"LogoPath={LogoPath}");
-        writer.WriteLine("# Set this to the path of your project's icon. ex: \"icon.png\"\n# Highly recommended to put this in the assets folder.");
+        writer.WriteLine("# Set this to the path of your project's icon. ex: \"icon.png\"" +
+                         "\n# Highly recommended to put this in the assets folder.");
         writer.WriteLine("# This is the icon which will appear in the taskbar.");
         writer.WriteLine($"IconPath={IconPath}");
     }

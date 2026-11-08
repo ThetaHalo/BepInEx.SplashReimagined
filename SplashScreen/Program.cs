@@ -7,18 +7,31 @@ public static class SplashScreenProgram
 {
     public const int SplashWidth = 800;
     public const int SplashHeight = 500;
+    public const bool WriteLogs = false;
+
+    public static bool IsUsingWine = Utilities.IsWine();
 
     public static string GameDir = string.Empty;    
     
     [STAThread]
     public static void Main(params string[] args)
     {
+        Utilities.DeletePreviousLogFile();
+        Utilities.Log($"\n---------\n---------\nStarting splash screen. IsUsingWine?: {IsUsingWine}");
         Configuration.ReadConfig();
         
-        Raylib.SetConfigFlags(ConfigFlags.UndecoratedWindow | ConfigFlags.TransparentWindow | ConfigFlags.TopmostWindow);
+        if (IsUsingWine) // suspect 1 of why crossover crashes
+            Raylib.SetConfigFlags(ConfigFlags.UndecoratedWindow | ConfigFlags.TopmostWindow);
+        else 
+            Raylib.SetConfigFlags(ConfigFlags.UndecoratedWindow | ConfigFlags.TransparentWindow | ConfigFlags.TopmostWindow);
+        
         Raylib.InitWindow(SplashWidth, SplashHeight, $"{Configuration.ProjectName} Splash Screen");
         Raylib.SetTargetFPS(60);
-        Raylib.InitAudioDevice();
+        
+        Utilities.Log($"Raylib initialized.");
+        
+        if (!IsUsingWine) // suspect 2 of why crossover crashes
+            Raylib.InitAudioDevice();
         
         double startedAt = Raylib.GetTime();
         bool connectedToGame = args.Length > 0;
@@ -36,10 +49,12 @@ public static class SplashScreenProgram
 
             if (connectedToGame)
             {
+                Utilities.Log($"Connected to game process with PID {args.Last()}. Starting thread log reader.");
                 ThreadLogReader.Start();
                 SetGameDir(args);
             }
 
+            Utilities.Log("Unsealing the hushed casket?");
             while (!Raylib.WindowShouldClose())
             {
                 bool updated = ThreadLogReader.Update();
@@ -55,34 +70,43 @@ public static class SplashScreenProgram
 
                     if (ThreadLogReader.Closed || StateManager.ShouldClose || openTooLong || logsTimedOut)
                     {
+                        Utilities.Log("Closing splash screen. Reason: " +
+                                      (ThreadLogReader.Closed ? "Thread log reader is rip" :
+                                          StateManager.ShouldClose ? "State manager requested close." :
+                                          openTooLong ? $"Timeout of {timeoutTime}s reached." :
+                                          logsTimedOut ? $"No logs received for {threadTimeout}s." :
+                                          "idk"));
                         break;
                     }
                 }
-                
+
                 if (connectedToGame && (ThreadLogReader.Closed || StateManager.ShouldClose)) break;
-                
-                #if DEBUG
+
+#if DEBUG
                 if (!connectedToGame)
                     CheckDebugKeybinds();
-                #endif
-                
+#endif
+
                 Raylib.BeginDrawing();
                 Raylib.ClearBackground(Color.Blank);
 
                 Utilities.DrawImage(Textures.SplashBackground, 0, 0, SplashWidth, SplashHeight);
 
-                #if !DEBUG
+#if !DEBUG
                 if (!connectedToGame)
                 {
                     Raylib.DrawText($"This is a splash screen for {Configuration.ProjectName}.\n It is not meant to be run directly.\nThe process will exit in 10s, please open {Configuration.GameName}.", 80, 225, 20, Color.Red);
                     Raylib.EndDrawing();
-                    if (Raylib.GetTime() - startedAt >= 10)
+                    if (Raylib.GetTime() - startedAt >= 10) 
+                    {
+                        Utilities.Log("Exiting splash screen because it was run directly and not connected to a game process.");
                         break;
+                    }
 
                     continue;
                 }
-                #endif
-                
+#endif
+
                 // this sucks ass
                 float logoX = Math.Max(0, SplashWidth - Textures.AppIcon.Width - 70);
                 const float loadingBarTop = 400;
@@ -99,20 +123,29 @@ public static class SplashScreenProgram
                     logoHeight);
                 // ---
 
-                Utilities.DrawButton(Textures.WebsiteInactive, Textures.WebsiteActive, new Rectangle(70, 40, 90, 90), Configuration.GitHubLink, ref wasWebsiteHovered);
-                Utilities.DrawButton(Textures.DiscordInactive, Textures.DiscordActive, new Rectangle(160, 40, 90, 90), Configuration.DiscordLink, ref wasDiscordHovered);
-                if (GameDir != string.Empty && Directory.Exists(GameDir)) Utilities.DrawButton(Textures.OpenGameDirInactive, Textures.OpenGameDirActive, new Rectangle(250, 40, 90, 90), GameDir, ref wasOpenGameDirHovered);
-                
+                Utilities.DrawButton(Textures.WebsiteInactive, Textures.WebsiteActive, new Rectangle(70, 40, 90, 90),
+                    Configuration.GitHubLink, ref wasWebsiteHovered);
+                Utilities.DrawButton(Textures.DiscordInactive, Textures.DiscordActive, new Rectangle(160, 40, 90, 90),
+                    Configuration.DiscordLink, ref wasDiscordHovered);
+                if (GameDir != string.Empty && Directory.Exists(GameDir))
+                    Utilities.DrawButton(Textures.OpenGameDirInactive, Textures.OpenGameDirActive,
+                        new Rectangle(250, 40, 90, 90), GameDir, ref wasOpenGameDirHovered);
+
                 Utilities.DrawCheckpoints();
                 Utilities.DrawLoadingBar(StateManager.GetLoadingBarProgress());
 
                 Raylib.EndDrawing();
             }
         }
+        catch (Exception e)
+        {
+            Utilities.LogError("uh oh!", e);
+        }
         finally
         {
+            Utilities.Log("i am dead D:");
             Textures.Unload();
-            Raylib.CloseAudioDevice();
+            if (!IsUsingWine) Raylib.CloseAudioDevice();
             Raylib.CloseWindow();
         }
     }
@@ -163,5 +196,4 @@ public static class SplashScreenProgram
 
         GameDir = Path.GetDirectoryName(gameProcess.MainModule?.FileName) ?? throw new Exception("Could not determine game directory.");
     }
-    
 }

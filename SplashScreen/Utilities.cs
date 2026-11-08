@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Raylib_cs;
 
 namespace BepInEx.SplashReimagined;
@@ -58,13 +59,14 @@ public static class Utilities
         Texture2D texture = hovered ? active : inactive;
         Raylib.DrawTexturePro(texture, new Rectangle(0, 0, texture.Width, texture.Height), bounds, Vector2.Zero, 0, Color.White);
         
-        if (hovered && !wasHovered)
+        if (hovered && !wasHovered && Raylib.IsAudioDeviceReady())
             Raylib.PlaySound(Textures.HoverSound);
 
         wasHovered = hovered;
 
         if (!hovered || !Raylib.IsMouseButtonPressed(MouseButton.Left)) return;
-        Raylib.PlaySound(Textures.ClickSound);
+        Log($"Opening URL: {url}");
+        if (Raylib.IsAudioDeviceReady()) Raylib.PlaySound(Textures.ClickSound);
         Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
     }
     
@@ -115,6 +117,68 @@ public static class Utilities
                 DrawImage(icon, 70, y - 3, 27, 27);
                 Raylib.DrawText(StateManager.GetMessage(state), 110, y, 20, Color.White);
             }
+        }
+    }
+    
+    public static bool IsWine()
+    {
+        if (!OperatingSystem.IsWindows())
+            return false;
+
+        if (!NativeLibrary.TryLoad("ntdll.dll", out var handle))
+            return false;
+
+        try
+        {
+            return NativeLibrary.TryGetExport(
+                handle, "wine_get_version", out _);
+        }
+        finally
+        {
+            NativeLibrary.Free(handle);
+        }
+    }
+
+    public static void DeletePreviousLogFile()
+    {
+        if (!SplashScreenProgram.WriteLogs) return;
+        string logFile = Configuration.GetBasePath() + Path.DirectorySeparatorChar + "splash.log";
+        try
+        {
+            if (File.Exists(logFile))
+                File.Delete(logFile);
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine($"Failed to delete previous log file: {e.Message}");
+        }
+    }
+    
+    public static void Log(string message)
+    {
+        if (!SplashScreenProgram.WriteLogs) return;
+        string logFile = Configuration.GetBasePath() + Path.DirectorySeparatorChar + "splash.log";
+        try
+        {
+            File.AppendAllText(logFile, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}{Environment.NewLine}");
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine($"Failed to write to log file: {e.Message}");
+        }
+    }
+    
+    public static void LogError(string message, Exception exception)
+    {
+        if (!SplashScreenProgram.WriteLogs) return;
+        string logFile = Configuration.GetBasePath() + Path.DirectorySeparatorChar + "splash.log";
+        try
+        {
+            File.AppendAllText(logFile, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] ERROR: {message}{Environment.NewLine}{exception}{Environment.NewLine}");
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine($"Failed to write to log file: {e.Message}");
         }
     }
 }

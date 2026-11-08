@@ -25,6 +25,8 @@ public static class Textures
 
     public static void Load()
     {
+        Utilities.Log("Loading textures and sounds...");
+        
         SplashBackground = LoadTexture("SplashBackground.png");
         Checkmark = LoadTexture("checkmark.png");
         DiscordActive = LoadTexture("discord_active.png");
@@ -41,10 +43,13 @@ public static class Textures
         
         ClickSound = LoadSoundAsset("click.wav");
         HoverSound = LoadSoundAsset("hover.wav");
+        
+        Utilities.Log("Textures and sounds loaded.");
     }
 
     private static Texture2D LoadTexture(string filename, bool isIcon = false, bool isEmbedded = true)
     {
+        Utilities.Log($"Loading texture from {filename}");
         Stream stream;
         if (isEmbedded)
         {
@@ -86,6 +91,7 @@ public static class Textures
     
     public static Sound LoadSoundAsset(string filename)
     {
+        Utilities.Log($"Loading sound from {filename}");
         var assembly = typeof(Textures).Assembly;
         using var stream = assembly.GetManifestResourceStream($"Assets/{filename}") ?? throw new FileNotFoundException($"Embedded sound not found: {filename}");
 
@@ -128,6 +134,7 @@ public static class Textures
         
         if (!File.Exists(path))
         {
+            Utilities.Log($"Logo file not found at {path}. Using default logo.");
             Console.WriteLine($"[SplashScreen] Logo file not found at {path}. Using default logo.");
             return LoadTexture("logo.png");
         }
@@ -148,6 +155,7 @@ public static class Textures
         
         if (!File.Exists(path))
         {
+            Utilities.Log($"Icon file not found at {path}. Using default icon.");
             Console.WriteLine($"[SplashScreen] Icon file not found at {path}. Using default icon.");
             return LoadTexture("icon.png", isIcon: true);
         }

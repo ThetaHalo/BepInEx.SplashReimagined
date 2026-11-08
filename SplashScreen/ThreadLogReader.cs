@@ -22,7 +22,8 @@ public static class ThreadLogReader
         }
         catch (Exception exception)
         {
-            Console.Error.WriteLine($"Splash input failed: {exception.Message}");
+            Utilities.LogError("Thread log reader failed D:", exception);
+            Console.WriteLine($"Splash input failed: {exception.Message}");
         }
         finally
         {
