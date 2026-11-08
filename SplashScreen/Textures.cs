@@ -129,8 +129,7 @@ public static class Textures
         }
         
         path = path.Replace("/", Path.DirectorySeparatorChar.ToString()).Replace("\\", Path.DirectorySeparatorChar.ToString());
-        
-        path = Configuration.GetBasePath() + Path.DirectorySeparatorChar + path;
+        path = Configuration.GetBasePath() + path;
         
         if (!File.Exists(path))
         {
@@ -151,7 +150,7 @@ public static class Textures
         
         path = path.Replace("/", Path.DirectorySeparatorChar.ToString()).Replace("\\", Path.DirectorySeparatorChar.ToString());
         
-        path = Configuration.GetBasePath() + Path.DirectorySeparatorChar + path;
+        path = Configuration.GetBasePath() + path;
         
         if (!File.Exists(path))
         {
@@ -162,4 +161,5 @@ public static class Textures
 
         return LoadTexture(path, isIcon: true, isEmbedded: false);
     }
+
 }
