@@ -211,8 +211,8 @@ public static class SplashScreenProgram
         private readonly Stopwatch stopwatch = Stopwatch.StartNew();
         private readonly System.Windows.Forms.Timer timer = new() { Interval = 50 };
         private readonly Dictionary<string, DrawingImage> images = new(StringComparer.OrdinalIgnoreCase);
-        private readonly DrawingFont headingFont = new("Consolas", 30, FontStyle.Bold, GraphicsUnit.Pixel);
-        private readonly DrawingFont itemFont = new("Consolas", 20, FontStyle.Regular, GraphicsUnit.Pixel);
+        private readonly DrawingFont headingFont = new("Arial", 25, FontStyle.Bold, GraphicsUnit.Pixel);
+        private readonly DrawingFont itemFont = new("Arial", 18, FontStyle.Regular, GraphicsUnit.Pixel);
         private TimeSpan lastLogAt;
         private Point mousePosition;
 
@@ -275,7 +275,7 @@ public static class SplashScreenProgram
 
             Graphics graphics = e.Graphics;
             graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            graphics.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
+            graphics.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
 
             DrawImage(graphics, "SplashBackground.png", 0, 0, SplashWidth, SplashHeight);
             DrawButton(graphics, "github_inactive.png", "github_active.png", 70, 40);
@@ -284,14 +284,12 @@ public static class SplashScreenProgram
                 DrawButton(graphics, "opengamedir_inactive.png", "opengamedir_active.png", 250, 40);
 
             using var whiteBrush = new SolidBrush(DrawingColor.White);
-            graphics.DrawString($"{Configuration.GameName} is Loading.", headingFont, whiteBrush, 70, 140);
-            DrawCheckpoint(graphics, SplashScreenState.ChainloaderStarted, 70, 177);
-            DrawCheckpoint(graphics, SplashScreenState.LoadingPlugins, 70, 217);
-            DrawCheckpoint(graphics, SplashScreenState.Done, 70, 257);
+            DrawFittedText(graphics, $"{Configuration.GameName} is Loading.", headingFont, whiteBrush, 70, 145, 350, 32);
+            DrawCheckpoint(graphics, SplashScreenState.ChainloaderStarted, 70, 190);
+            DrawCheckpoint(graphics, SplashScreenState.LoadingPlugins, 70, 232);
+            DrawCheckpoint(graphics, SplashScreenState.Done, 70, 274);
 
-            const int logoX = 390;
-            const int logoSize = 320;
-            DrawImage(graphics, "logo.png", logoX, 70, logoSize, logoSize);
+            DrawImage(graphics, "logo.png", 440, 85, 270, 270);
 
             const int barX = 70;
             const int barY = 390;
@@ -353,7 +351,17 @@ public static class SplashScreenProgram
             bool complete = StateManager.IsCheckpointComplete(state);
             DrawImage(graphics, complete ? "checkmark.png" : "x.png", x, y, 27, 27);
             using var brush = new SolidBrush(DrawingColor.White);
-            graphics.DrawString(StateManager.GetMessage(state), itemFont, brush, x + 40, y - 2);
+            DrawFittedText(graphics, StateManager.GetMessage(state), itemFont, brush, x + 40, y - 1, 310, 29);
+        }
+
+        private static void DrawFittedText(Graphics graphics, string text, DrawingFont font, Brush brush, int x, int y, int width, int height)
+        {
+            using var format = new StringFormat
+            {
+                FormatFlags = StringFormatFlags.NoWrap,
+                Trimming = StringTrimming.EllipsisCharacter
+            };
+            graphics.DrawString(text, font, brush, new DrawingRectangle(x, y, width, height), format);
         }
 
         private void DrawButton(Graphics graphics, string inactive, string active, int x, int y)
